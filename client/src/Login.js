@@ -16,7 +16,7 @@ const Login = ({ user, login }) => {
     event.preventDefault();
     const form = event.currentTarget;
     const formElements = form.elements;
-    const username = formElements.username.value;
+    const username = formElements.username.value?.toLowerCase();
     const password = formElements.password.value;
 
     await login({ username, password });
