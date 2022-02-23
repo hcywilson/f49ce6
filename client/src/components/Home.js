@@ -7,6 +7,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import { SidebarContainer } from "../components/Sidebar";
 import { ActiveChat } from "../components/ActiveChat";
 import { SocketContext } from "../context/socket";
+import cloneDeep from 'lodash/cloneDeep';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,7 +34,7 @@ const Home = ({ user, logout }) => {
       currentUsers[convo.otherUser.id] = true;
     });
 
-    const newState = [...conversations];
+    const newState = cloneDeep(conversations);
     users.forEach((user) => {
       // only create a fake convo if we don't already have a convo with this user
       if (!currentUsers[user.id]) {
@@ -79,7 +81,7 @@ const Home = ({ user, logout }) => {
   const addNewConvo = useCallback(
     (recipientId, message) => {
       setConversations((prev) => {
-        var newConversations = [...prev];
+        const newConversations = cloneDeep(prev);
         newConversations.forEach((convo) => {
           if (convo.otherUser.id === recipientId) {
             convo.messages.push(message);
@@ -108,7 +110,7 @@ const Home = ({ user, logout }) => {
       }
 
       setConversations((prev) => {
-        var newConversations = [...prev];
+        const newConversations = cloneDeep(prev);
         newConversations.forEach((convo) => {
           if (convo.id === message.conversationId) {
             convo.messages.push(message);
