@@ -19,8 +19,8 @@ const Signup = ({ user, register }) => {
     event.preventDefault();
     const form = event.currentTarget;
     const formElements = form.elements;
-    const username = formElements.username.value?.toLowerCase();
-    const email = formElements.email.value?.toLowerCase();
+    const username = formElements.username.value;
+    const email = formElements.email.value;
     const password = formElements.password.value;
     const confirmPassword = formElements.confirmPassword.value;
 

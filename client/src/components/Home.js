@@ -27,7 +27,6 @@ const Home = ({ user, logout }) => {
 
   const addSearchedUsers = (users) => {
     const currentUsers = {};
-
     // make table of current users so we can lookup faster
     conversations.forEach((convo) => {
       currentUsers[convo.otherUser.id] = true;
@@ -41,7 +40,6 @@ const Home = ({ user, logout }) => {
         newState.push(fakeConvo);
       }
     });
-
     setConversations(newState);
   };
 
