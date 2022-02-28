@@ -6,6 +6,9 @@ from messenger_backend.models import Conversation, Message
 from online_users import online_users
 from rest_framework.views import APIView
 from rest_framework.request import Request
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Conversations(APIView):
@@ -49,8 +52,11 @@ class Conversations(APIView):
                 user_fields = ["id", "username", "photoUrl"]
                 if convo.user1 and convo.user1.id != user_id:
                     convo_dict["otherUser"] = convo.user1.to_dict(user_fields)
+                    convo_dict["lastReadMessageId"] = convo.user2ReadMessageId
                 elif convo.user2 and convo.user2.id != user_id:
                     convo_dict["otherUser"] = convo.user2.to_dict(user_fields)
+                    convo_dict["lastReadMessageId"] = convo.user1ReadMessageId
+
 
                 # set property for online status of the other user
                 if convo_dict["otherUser"]["id"] in online_users:
@@ -67,5 +73,46 @@ class Conversations(APIView):
                 conversations_response,
                 safe=False,
             )
+        except Exception as e:
+            return HttpResponse(status=500)
+
+
+    def post(self, request: Request):
+        try:
+            user = get_user(request)
+
+            if user.is_anonymous:
+                return HttpResponse(status=401)
+
+            user_id = user.id
+            body = request.data
+            conversation_id = body.get("conversationId")
+            lastReadMessageId = body.get("lastReadMessageId")
+            user_id = user.id
+
+            convo = Conversation.objects.get(pk=conversation_id)
+            if convo.user1.id == user_id and (convo.user1ReadMessageId is None or convo.user1ReadMessageId < lastReadMessageId):
+                print("update user1ReadMessageId to ", lastReadMessageId)
+                convo.user1ReadMessageId = lastReadMessageId
+            elif convo.user2.id == user_id and (convo.user2ReadMessageId is None or convo.user2ReadMessageId < lastReadMessageId):
+                print("update user1ReadMessageId to ", lastReadMessageId)
+                convo.user2ReadMessageId = lastReadMessageId
+            convo.save()     
+
+            convo_dict = {
+                    "conversationId": convo.id,
+                }
+
+            if convo.user1 and convo.user1.id != user_id:
+                convo_dict["lastReadMessageId"] = convo.user2ReadMessageId
+            elif convo.user2 and convo.user2.id != user_id:
+                convo_dict["lastReadMessageId"] = convo.user1ReadMessageId
+
+                # set properties for notification count and latest message preview
+            
+            return JsonResponse(
+                convo_dict,
+                safe=False,
+            )       
         except Exception as e:
             return HttpResponse(status=500)

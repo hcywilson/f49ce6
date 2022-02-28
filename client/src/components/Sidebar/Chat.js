@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
+import UnreadMessage from './UnreadMessage';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -14,6 +15,13 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       cursor: 'grab',
     },
+  },
+  text: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+    padding: 8,
   },
 }));
 
@@ -34,6 +42,7 @@ const Chat = ({ conversation, setActiveChat }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
+      <UnreadMessage conversation={conversation} />
     </Box>
   );
 };

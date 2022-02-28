@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useContext } from "react";
+import React, { useCallback, useEffect, useState, useContext, useMemo } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { Grid, CssBaseline, Button } from "@material-ui/core";
@@ -34,7 +34,7 @@ const Home = ({ user, logout }) => {
       currentUsers[convo.otherUser.id] = true;
     });
 
-    const newState = cloneDeep(conversations);
+    const newState = [...conversations];
     users.forEach((user) => {
       // only create a fake convo if we don't already have a convo with this user
       if (!currentUsers[user.id]) {
@@ -65,7 +65,6 @@ const Home = ({ user, logout }) => {
   const postMessage = async (body) => {
     try {
       const data = await saveMessage(body);
-
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
       } else {
@@ -106,21 +105,26 @@ const Home = ({ user, logout }) => {
           messages: [message],
         };
         newConvo.latestMessageText = message.text;
-        setConversations((prev) => [newConvo, ...prev]);
-      }
-
-      setConversations((prev) => {
-        const newConversations = cloneDeep(prev);
-        newConversations.forEach((convo) => {
-          if (convo.id === message.conversationId) {
-            convo.messages.push(message);
-            convo.latestMessageText = message.text;
-          }
+        setConversations((prev) => {
+          const convClone = cloneDeep(prev);
+          return [newConvo, ...convClone];
         });
-        return newConversations;
-      });
+      }
+      else {
+        setConversations((prev) => {
+          const newConversations = cloneDeep(prev);
+          newConversations.forEach((convo) => {
+            if (convo.id === message.conversationId) {
+              convo.messages.push(message);
+              convo.latestMessageText = message.text;
+              convo.lastReadMessageId = user.id === message.senderId ? message.id : convo.lastReadMessageId;
+            }
+          });
+          return newConversations;
+        });
+      }
     },
-    [setConversations],
+    [setConversations, user],
   );
 
   const setActiveChat = (username) => {
@@ -154,6 +158,33 @@ const Home = ({ user, logout }) => {
       }),
     );
   }, []);
+
+  const conversation = useMemo(() => conversations ?
+    conversations.find(
+      (conversation) => conversation.otherUser.username === activeConversation)
+    : undefined, [conversations, activeConversation]);
+
+  const isNeedReadMsgUpdate = (convo) =>
+    convo && convo.messages && convo.messages.length > 0
+    && (!convo.lastReadMessageId || convo?.lastReadMessageId < convo.messages[convo.messages.length - 1].id);
+
+  const updateLastReadMessageId = async (convo) => {
+    const body = {
+      conversationId: convo.id,
+      lastReadMessageId: convo.messages[convo.messages.length - 1].id
+    };
+    const { data } = await axios.post("/api/conversations", body);
+    setConversations((prev) => {
+      const newConversations = cloneDeep(prev);
+      newConversations.forEach((convo) => {
+        if (convo.id === data.conversationId) {
+          convo.lastReadMessageId = data.lastReadMessageId;
+        }
+      });
+      return newConversations;
+    });
+  };
+
 
   // Lifecycle
 
@@ -204,6 +235,12 @@ const Home = ({ user, logout }) => {
       await logout(user.id);
     }
   };
+
+  useEffect(() => {
+    if (isNeedReadMsgUpdate(conversation)) {
+      updateLastReadMessageId(conversation)
+    }
+  }, [conversation]);
 
   return (
     <>
