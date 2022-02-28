@@ -76,7 +76,6 @@ class Conversations(APIView):
         except Exception as e:
             return HttpResponse(status=500)
 
-
     def post(self, request: Request):
         try:
             user = get_user(request)
@@ -92,10 +91,8 @@ class Conversations(APIView):
 
             convo = Conversation.objects.get(pk=conversation_id)
             if convo.user1.id == user_id and (convo.user1ReadMessageId is None or convo.user1ReadMessageId < lastReadMessageId):
-                print("update user1ReadMessageId to ", lastReadMessageId)
                 convo.user1ReadMessageId = lastReadMessageId
             elif convo.user2.id == user_id and (convo.user2ReadMessageId is None or convo.user2ReadMessageId < lastReadMessageId):
-                print("update user1ReadMessageId to ", lastReadMessageId)
                 convo.user2ReadMessageId = lastReadMessageId
             convo.save()     
 
@@ -107,8 +104,6 @@ class Conversations(APIView):
                 convo_dict["lastReadMessageId"] = convo.user2ReadMessageId
             elif convo.user2 and convo.user2.id != user_id:
                 convo_dict["lastReadMessageId"] = convo.user1ReadMessageId
-
-                # set properties for notification count and latest message preview
             
             return JsonResponse(
                 convo_dict,
