@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {memo} from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import { Box, Typography } from '@material-ui/core';
 
@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
         borderRadius: '50%',
         backgroundColor: "#3A8DFF",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "center", 
     },
     text: {
         display: 'flex',
@@ -24,30 +24,15 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const UnreadMessage = ({ conversation }) => {
+const UnreadMessage = ({ unreadMessages }) => {
     const classes = useStyles();
-
-    const [unreadMessage, setUnreadMessage] = useState(0);
-
-    const updateUnreadMessage = (conversation) => {
-        setUnreadMessage(
-            conversation?.messages?.filter(
-                message => (!conversation.lastReadMessageId || message.id > conversation.lastReadMessageId)
-                    && message.senderId === conversation.otherUser.id).length
-        );
-    };
-
-    useEffect(() => {
-        updateUnreadMessage(conversation);
-    }, [conversation]);
-
-    if (unreadMessage > 0)
+    if (unreadMessages > 0)
         return (
             <Box className={classes.bubble}>
-                <Typography className={classes.text} >{unreadMessage}</Typography>
+                <Typography className={classes.text} >{unreadMessages}</Typography>
             </Box>)
     else
         return null;
 };
 
-export default UnreadMessage;
+export default memo(UnreadMessage);
