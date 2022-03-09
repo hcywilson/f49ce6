@@ -168,10 +168,9 @@ const Home = ({ user, logout }) => {
     );
   }, []);
 
-  const conversation = useMemo(() => conversations ?
-    conversations.find(
-      (conversation) => conversation.otherUser.username === activeConversation)
-    : undefined, [conversations, activeConversation]);
+  const conversation = useMemo(() => conversations?.find(
+    (conversation) => conversation.otherUser.username === activeConversation
+  ), [conversations, activeConversation]);
 
   const putConversationAsRead = (convo) => {
     const body = {

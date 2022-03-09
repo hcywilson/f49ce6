@@ -1,4 +1,4 @@
-import React, {memo} from "react";
+import React, { memo } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import { Box, Typography } from '@material-ui/core';
 
@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
         borderRadius: '50%',
         backgroundColor: "#3A8DFF",
         alignItems: "center",
-        justifyContent: "center", 
+        justifyContent: "center",
     },
     text: {
         display: 'flex',
@@ -26,13 +26,11 @@ const useStyles = makeStyles((theme) => ({
 
 const UnreadMessage = ({ unreadMessages }) => {
     const classes = useStyles();
-    if (unreadMessages > 0)
-        return (
-            <Box className={classes.bubble}>
-                <Typography className={classes.text} >{unreadMessages}</Typography>
-            </Box>)
-    else
-        return null;
+    if (unreadMessages <= 0) return null;
+    return (
+        <Box className={classes.bubble}>
+            <Typography className={classes.text} >{unreadMessages}</Typography>
+        </Box>)
 };
 
 export default memo(UnreadMessage);

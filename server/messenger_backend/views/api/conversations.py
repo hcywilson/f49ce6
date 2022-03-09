@@ -6,9 +6,6 @@ from messenger_backend.models import Conversation, Message, message
 from online_users import online_users
 from rest_framework.views import APIView
 from rest_framework.request import Request
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class Conversations(APIView):
@@ -25,7 +22,8 @@ class Conversations(APIView):
             user_id = user.id
 
             conversations = (
-                Conversation.objects.filter(Q(user1=user_id) | Q(user2=user_id))
+                Conversation.objects.filter(
+                    Q(user1=user_id) | Q(user2=user_id))
                 .prefetch_related(
                     Prefetch(
                         "messages", queryset=Message.objects.order_by("createdAt")
@@ -38,17 +36,19 @@ class Conversations(APIView):
 
             for convo in conversations:
                 try:
-                    lastMessgaeIdReadByRecipient = max(message.id for message in convo.messages.all() if message.senderId==user_id and message.read)
+                    lastMessgaeIdReadByRecipient = max(message.id for message in convo.messages.all(
+                    ) if message.senderId == user_id and message.read)
                 except ValueError:
                     lastMessgaeIdReadByRecipient = None
-                
+
                 convo_dict = {
                     "id": convo.id,
                     "messages": [
-                        message.to_dict(["id", "text", "senderId", "createdAt"])
+                        message.to_dict(
+                            ["id", "text", "senderId", "createdAt"])
                         for message in convo.messages.all()
                     ],
-                    "unreadMessages": sum(not message.read and not message.senderId==user_id for message in convo.messages.all()),
+                    "unreadMessages": sum(not message.read and not message.senderId == user_id for message in convo.messages.all()),
                     "lastMessgaeIdReadByRecipient": lastMessgaeIdReadByRecipient
                 }
                 # set properties for notification count and latest message preview
@@ -60,7 +60,6 @@ class Conversations(APIView):
                     convo_dict["otherUser"] = convo.user1.to_dict(user_fields)
                 elif convo.user2 and convo.user2.id != user_id:
                     convo_dict["otherUser"] = convo.user2.to_dict(user_fields)
-
 
                 # set property for online status of the other user
                 if convo_dict["otherUser"]["id"] in online_users:
@@ -94,16 +93,14 @@ class Conversations(APIView):
 
             conversation = Conversation.objects.get(pk=conversation_id)
             if conversation.user1.id != user_id and conversation.user2.id != user_id:
-                return HttpResponse(status=400)
+                return HttpResponse(status=403)
 
-            messages = Message.objects.filter(conversation=conversation_id, read=False, id__lte=last_read_message_id).exclude(senderId=user_id).all()
+            messages = Message.objects.filter(
+                conversation=conversation_id, read=False, id__lte=last_read_message_id).exclude(senderId=user_id).all()
             for message in messages:
                 message.read = True
             Message.objects.bulk_update(messages, ["read"])
-            
-            return JsonResponse(
-                None,
-                safe=False,
-            )       
+
+            return HttpResponse(status=204)
         except Exception as e:
             return HttpResponse(status=500)
