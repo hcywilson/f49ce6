@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 
 const UnreadMessage = ({ unreadMessages }) => {
     const classes = useStyles();
-    if (unreadMessages <= 0) return null;
+    if (!unreadMessages || unreadMessages <= 0) return null;
     return (
         <Box className={classes.bubble}>
             <Typography className={classes.text} >{unreadMessages}</Typography>

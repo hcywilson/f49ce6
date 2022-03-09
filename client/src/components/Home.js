@@ -7,8 +7,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import { SidebarContainer } from "../components/Sidebar";
 import { ActiveChat } from "../components/ActiveChat";
 import { SocketContext } from "../context/socket";
-import cloneDeep from 'lodash/cloneDeep';
-
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -88,15 +86,20 @@ const Home = ({ user, logout }) => {
   const addNewConvo = useCallback(
     (recipientId, message) => {
       setConversations((prev) => {
-        const newConversations = cloneDeep(prev);
-        newConversations.forEach((convo) => {
+        const newConversations = [...prev];
+        for (let i = 0; i < newConversations.length; i++) {
+          const convo = newConversations[i];
           if (convo.otherUser.id === recipientId) {
-            convo.messages.push(message);
-            convo.latestMessageText = message.text;
-            convo.id = message.conversationId;
-            convo.unreadMessages = 0;
+            const newConvo = { ...convo };
+            const newMessages = [...newConvo.messages];
+            newMessages.push(message);
+            newConvo.messages = newMessages;
+            newConvo.latestMessageText = message.text;
+            newConvo.id = message.conversationId;
+            newConvo.unreadMessages = 0;
+            newConversations[i] = newConvo;
           }
-        });
+        };
         return newConversations
       });
     },
@@ -121,14 +124,19 @@ const Home = ({ user, logout }) => {
       }
       else {
         setConversations((prev) => {
-          const newConversations = cloneDeep(prev);
-          newConversations.forEach((convo) => {
+          const newConversations = [...prev];
+          for (let i = 0; i < newConversations.length; i++) {
+            const convo = newConversations[i];
             if (convo.id === message.conversationId) {
-              convo.messages.push(message);
-              convo.latestMessageText = message.text;
-              if (message.senderId !== user.id) { convo.unreadMessages++; }
+              const newConvo = { ...convo };
+              const newMessages = [...newConvo.messages];
+              newMessages.push(message);
+              newConvo.messages = newMessages;
+              newConvo.latestMessageText = message.text;
+              if (message.senderId !== user.id) { newConvo.unreadMessages++; }
+              newConversations[i] = newConvo;
             }
-          });
+          }
           return newConversations;
         });
       }
@@ -184,12 +192,15 @@ const Home = ({ user, logout }) => {
   const setUnreadMessageCountToZero = (convo) => {
     if (convo.unreadMessages > 0) {
       setConversations((prev) => {
-        const newConversations = cloneDeep(prev);
-        newConversations.forEach((c) => {
+        const newConversations = [...prev];
+        for (let i = 0; i < newConversations.length; i++) {
+          const c = newConversations[i];
           if (c.id === convo.id) {
-            c.unreadMessages = 0;
+            const newC = { ...c };
+            newC.unreadMessages = 0;
+            newConversations[i] = newC;
           }
-        })
+        };
         return newConversations;
       });
     }
@@ -197,12 +208,15 @@ const Home = ({ user, logout }) => {
 
   const updateSentMessageAsRead = useCallback((readMessage) => {
     setConversations((prev) => {
-      const newConversations = cloneDeep(prev);
-      newConversations.forEach((convo) => {
+      const newConversations = [...prev];
+      for (let i = 0; i < newConversations.length; i++) {
+        const convo = newConversations[i];
         if (convo.id === readMessage.conversationId && user.id !== readMessage.readUserId) {
-          convo.lastMessgaeIdReadByRecipient = readMessage.lastReadMessageId;
+          const newConvo = { ...convo };
+          newConvo.lastMessgaeIdReadByRecipient = readMessage.lastReadMessageId;
+          newConversations[i] = newConvo;
         }
-      })
+      };
       return newConversations;
     })
   }, [user])

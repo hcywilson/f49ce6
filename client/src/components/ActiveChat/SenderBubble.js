@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
 
 const SenderBubble = ({ time, text, otherUser, isLastReadMessage }) => {
   const classes = useStyles();
-  let avatar = isLastReadMessage ? (
+  const avatar = isLastReadMessage ? (
     <Avatar
       alt={otherUser?.username}
       src={otherUser?.photoUrl}
