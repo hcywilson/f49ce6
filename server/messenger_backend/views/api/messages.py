@@ -33,10 +33,11 @@ class Messages(APIView):
                 return JsonResponse({"message": message_json, "sender": body["sender"]})
 
             # if we don't have conversation id, find a conversation to m       ake sure it doesn't already exist
-            conversation = Conversation.find_conversation(sender_id, recipient_id)
-            if not conversation:
+            if not conversation_id:
                 # create conversation
-                conversation = Conversation(user1_id=sender_id, user2_id=recipient_id)
+                conversation = Conversation.objects.create()
+                conversation.user.add(sender_id)
+                conversation.user.add(recipient_id)     
                 conversation.save()
 
                 if sender and sender["id"] in online_users:

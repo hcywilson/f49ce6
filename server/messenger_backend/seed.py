@@ -26,7 +26,10 @@ def seed():
 
     santiago.save()
 
-    santiagoConvo = Conversation(user1=thomas, user2=santiago)
+    santiagoConvo = Conversation.objects.create()
+    santiagoConvo.user.add(thomas)
+    santiagoConvo.user.add(santiago)
+    # santiagoConvo = Conversation(user1=thomas, user2=santiago)
     santiagoConvo.save()
 
     messages = Message(
@@ -54,7 +57,10 @@ def seed():
     )
     chiumbo.save()
 
-    chiumboConvo = Conversation(user1=chiumbo, user2=thomas)
+    chiumboConvo = Conversation.objects.create()
+    chiumboConvo.user.add(chiumbo)
+    chiumboConvo.user.add(thomas)
+    # chiumboConvo = Conversation(user1=chiumbo, user2=thomas)
     chiumboConvo.save()
 
     messages = Message(
@@ -70,7 +76,10 @@ def seed():
     )
     hualing.save()
 
-    hualingConvo = Conversation(user1=hualing, user2=thomas)
+    hualingConvo = Conversation.objects.create()
+    hualingConvo.user.add(hualing)
+    hualingConvo.user.add(thomas)
+    # hualingConvo = Conversation(user1=hualing, user2=thomas)
     hualingConvo.save()
 
     for i in range(10):
