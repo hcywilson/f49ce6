@@ -23,7 +23,7 @@ class Conversations(APIView):
 
             conversations = (
                 Conversation.objects.filter(
-                    Q(user1=user_id) | Q(user2=user_id))
+                    Q(user=user_id))
                 .prefetch_related(
                     Prefetch(
                         "messages", queryset=Message.objects.order_by("createdAt")
@@ -56,10 +56,9 @@ class Conversations(APIView):
 
                 # set a property "otherUser" so that frontend will have easier access
                 user_fields = ["id", "username", "photoUrl"]
-                if convo.user1 and convo.user1.id != user_id:
-                    convo_dict["otherUser"] = convo.user1.to_dict(user_fields)
-                elif convo.user2 and convo.user2.id != user_id:
-                    convo_dict["otherUser"] = convo.user2.to_dict(user_fields)
+                for user in convo.user.all(): 
+                    if user.id != user_id:
+                        convo_dict["otherUser"] = user.to_dict(user_fields)
 
                 # set property for online status of the other user
                 if convo_dict["otherUser"]["id"] in online_users:
@@ -92,7 +91,8 @@ class Conversations(APIView):
             last_read_message_id = body.get("lastReadMessageId")
 
             conversation = Conversation.objects.get(pk=conversation_id)
-            if conversation.user1.id != user_id and conversation.user2.id != user_id:
+
+            if user_id in conversation.user.all():
                 return HttpResponse(status=403)
 
             messages = Message.objects.filter(
