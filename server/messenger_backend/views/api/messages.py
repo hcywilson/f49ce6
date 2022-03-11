@@ -26,7 +26,7 @@ class Messages(APIView):
             if conversation_id:
                 conversation = Conversation.objects.filter(id=conversation_id).first()
                 message = Message(
-                    senderId=sender_id, text=text, conversation=conversation
+                    senderId=sender_id, text=text, conversation=conversation, read=False
                 )
                 message.save()
                 message_json = message.to_dict()
